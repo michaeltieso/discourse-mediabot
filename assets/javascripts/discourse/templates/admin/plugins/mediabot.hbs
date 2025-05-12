@@ -1,0 +1,139 @@
+{{#if model.settings}}
+  <div class="mediabot-admin">
+    <div class="settings-section">
+      <h3>{{i18n 'mediabot.admin.settings.title'}}</h3>
+      
+      <div class="setting-item">
+        <label>
+          {{input type="checkbox" checked=model.settings.enabled}}
+          {{i18n 'mediabot.admin.settings.enabled'}}
+        </label>
+      </div>
+      
+      <div class="setting-item">
+        <label>{{i18n 'mediabot.admin.settings.enabled_tags'}}</label>
+        {{input value=model.settings.enabled_tags}}
+      </div>
+      
+      <div class="setting-item">
+        <label>{{i18n 'mediabot.admin.settings.enabled_categories'}}</label>
+        {{input value=model.settings.enabled_categories}}
+      </div>
+    </div>
+    
+    <div class="settings-section">
+      <h3>{{i18n 'mediabot.admin.settings.display_options'}}</h3>
+      
+      {{#each model.settings.display_options as |option enabled|}}
+        <div class="setting-item">
+          <label>
+            {{input type="checkbox" checked=enabled}}
+            {{i18n (concat 'mediabot.admin.settings.' option)}}
+          </label>
+        </div>
+      {{/each}}
+    </div>
+    
+    <div class="settings-section">
+      <h3>{{i18n 'mediabot.admin.metrics.title'}}</h3>
+      
+      <div class="metrics-container">
+        <div class="metric-group">
+          <h4>{{i18n 'mediabot.admin.metrics.tmdb'}}</h4>
+          {{#each model.metrics.tmdb as |metric value|}}
+            <div class="metric-item">
+              <span class="metric-label">{{i18n (concat 'mediabot.admin.metrics.' metric)}}</span>
+              <span class="metric-value">{{value}}</span>
+            </div>
+          {{/each}}
+        </div>
+        
+        <div class="metric-group">
+          <h4>{{i18n 'mediabot.admin.metrics.tvdb'}}</h4>
+          {{#each model.metrics.tvdb as |metric value|}}
+            <div class="metric-item">
+              <span class="metric-label">{{i18n (concat 'mediabot.admin.metrics.' metric)}}</span>
+              <span class="metric-value">{{value}}</span>
+            </div>
+          {{/each}}
+        </div>
+      </div>
+      
+      <button class="btn btn-danger" {{action "clearMetrics"}}>
+        {{i18n 'mediabot.admin.metrics.clear'}}
+      </button>
+    </div>
+    
+    <div class="settings-section">
+      <h3>{{i18n 'mediabot.admin.errors.title'}}</h3>
+      
+      <div class="errors-container">
+        {{#each model.errors as |error|}}
+          <div class="error-item">
+            <div class="error-header">
+              <span class="error-type">{{error.type}}</span>
+              <span class="error-time">{{format-date error.timestamp}}</span>
+            </div>
+            <div class="error-message">{{error.message}}</div>
+            {{#if error.context}}
+              <div class="error-context">
+                {{#each error.context as |value key|}}
+                  <div class="context-item">
+                    <span class="context-key">{{key}}:</span>
+                    <span class="context-value">{{value}}</span>
+                  </div>
+                {{/each}}
+              </div>
+            {{/if}}
+          </div>
+        {{/each}}
+      </div>
+      
+      <button class="btn btn-danger" {{action "clearErrors"}}>
+        {{i18n 'mediabot.admin.errors.clear'}}
+      </button>
+    </div>
+    
+    <div class="settings-section">
+      <h3>{{i18n 'mediabot.admin.test.title'}}</h3>
+      
+      <div class="test-container">
+        <div class="test-form">
+          <div class="form-group">
+            <label>{{i18n 'mediabot.admin.test.service'}}</label>
+            {{combo-box
+              value=testService
+              content=services
+              onChange=(action (mut testService))
+            }}
+          </div>
+          
+          <div class="form-group">
+            <label>{{i18n 'mediabot.admin.test.title'}}</label>
+            {{input value=testTitle}}
+          </div>
+          
+          <button class="btn btn-primary" {{action "testApi"}}>
+            {{i18n 'mediabot.admin.test.submit'}}
+          </button>
+        </div>
+        
+        {{#if testResult}}
+          <div class="test-result {{if testResult.success 'success' 'error'}}">
+            {{#if testResult.success}}
+              <pre>{{json-stringify testResult.data}}</pre>
+            {{else}}
+              <div class="error-message">{{testResult.error}}</div>
+            {{/if}}
+          </div>
+        {{/if}}
+      </div>
+    </div>
+    
+    <div class="settings-actions">
+      <button class="btn btn-primary" {{action "saveSettings"}}>
+        {{i18n 'mediabot.admin.save'}}
+      </button>
+    </div>
+  </div>
+{{/if}} 

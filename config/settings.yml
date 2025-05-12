@@ -1,0 +1,34 @@
+plugins:
+  mediabot_enabled:
+    default: false
+    client: true
+  mediabot_enabled_tags:
+    default: "movie,tv"
+    client: true
+  mediabot_enabled_categories:
+    default: ""
+    client: true
+  mediabot_show_title:
+    default: true
+    client: true
+  mediabot_show_poster:
+    default: true
+    client: true
+  mediabot_show_overview:
+    default: true
+    client: true
+  mediabot_show_cast:
+    default: true
+    client: true
+  mediabot_show_rating:
+    default: true
+    client: true
+  mediabot_show_genres:
+    default: true
+    client: true
+  mediabot_show_runtime:
+    default: true
+    client: true
+  mediabot_show_links:
+    default: true
+    client: true 
