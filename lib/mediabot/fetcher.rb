@@ -2,9 +2,10 @@ module DiscourseMediaBot
   class Fetcher
     class ApiError < StandardError; end
     class RateLimitError < StandardError; end
+    class CacheError < StandardError; end
     
     CACHE_EXPIRY = 24.hours.to_i
-    RATE_LIMIT_KEY = "discourse-mediabot:rate_limit"
+    RATE_LIMIT_KEY = "mediabot:rate_limit"
     RATE_LIMIT_WINDOW = 1.minute
     MAX_REQUESTS_PER_WINDOW = 30
     
@@ -22,11 +23,16 @@ module DiscourseMediaBot
     
     def fetch(title)
       locale = I18n.locale
-      cache_key = "discourse-mediabot:#{@media_type}:#{title.downcase}:#{locale}"
+      cache_key = "mediabot:#{@media_type}:#{title.downcase}:#{locale}"
       
       # Check cache first
-      cached_result = $redis.get(cache_key)
-      return JSON.parse(cached_result) if cached_result
+      begin
+        cached_result = Discourse.redis.get(cache_key)
+        return JSON.parse(cached_result) if cached_result
+      rescue Redis::CommandError => e
+        Rails.logger.error("DiscourseMediaBot cache error: #{e.message}")
+        # Continue without cache
+      end
 
       # Check rate limit
       check_rate_limit
@@ -42,7 +48,12 @@ module DiscourseMediaBot
                end
 
       # Cache the result
-      $redis.setex(cache_key, CACHE_EXPIRY, result.to_json)
+      begin
+        Discourse.redis.setex(cache_key, CACHE_EXPIRY, result.to_json)
+      rescue Redis::CommandError => e
+        Rails.logger.error("DiscourseMediaBot cache error: #{e.message}")
+        # Continue without caching
+      end
       
       result
     end
@@ -50,12 +61,17 @@ module DiscourseMediaBot
     private
     
     def check_rate_limit
-      current = $redis.get(RATE_LIMIT_KEY).to_i
-      if current >= rate_limit
-        raise RateLimitError, "Rate limit exceeded. Try again later."
+      begin
+        current = Discourse.redis.get(RATE_LIMIT_KEY).to_i
+        if current >= rate_limit
+          raise RateLimitError, "Rate limit exceeded. Try again later."
+        end
+        Discourse.redis.incr(RATE_LIMIT_KEY)
+        Discourse.redis.expire(RATE_LIMIT_KEY, rate_limit_window)
+      rescue Redis::CommandError => e
+        Rails.logger.error("DiscourseMediaBot rate limit error: #{e.message}")
+        # Continue without rate limiting
       end
-      $redis.incr(RATE_LIMIT_KEY)
-      $redis.expire(RATE_LIMIT_KEY, rate_limit_window)
     end
     
     def rate_limit

@@ -13,34 +13,61 @@ module MediaBot
       result = yield
       duration = Time.current - start_time
       
-      track_metric(:api_response_time, service, duration)
-      track_metric(:request_count, service, 1)
+      begin
+        track_metric(:api_response_time, service, duration)
+        track_metric(:request_count, service, 1)
+      rescue Redis::CommandError => e
+        Rails.logger.error("DiscourseMediaBot metrics tracking failed: #{e.message}")
+        # Continue without tracking
+      end
       
       result
     rescue StandardError => e
-      track_metric(:error_count, service, 1)
+      begin
+        track_metric(:error_count, service, 1)
+      rescue Redis::CommandError => redis_error
+        Rails.logger.error("DiscourseMediaBot error tracking failed: #{redis_error.message}")
+      end
       raise e
     end
     
     def self.track_cache_hit(service)
-      track_metric(:cache_hits, service, 1)
+      begin
+        track_metric(:cache_hits, service, 1)
+      rescue Redis::CommandError => e
+        Rails.logger.error("DiscourseMediaBot cache hit tracking failed: #{e.message}")
+      end
     end
     
     def self.track_cache_miss(service)
-      track_metric(:cache_misses, service, 1)
+      begin
+        track_metric(:cache_misses, service, 1)
+      rescue Redis::CommandError => e
+        Rails.logger.error("DiscourseMediaBot cache miss tracking failed: #{e.message}")
+      end
     end
     
     def self.get_metrics(service, time_range = 24.hours)
       start_time = Time.current - time_range
       
       METRICS.transform_values do |key|
-        get_metric(key, service, start_time)
+        begin
+          get_metric(key, service, start_time)
+        rescue Redis::CommandError => e
+          Rails.logger.error("DiscourseMediaBot metrics retrieval failed: #{e.message}")
+          {}
+        end
       end
     end
     
     def self.clear_metrics
-      METRICS.each_value do |key|
-        Discourse.redis.del(key)
+      begin
+        METRICS.each_value do |key|
+          Discourse.redis.del(key)
+        end
+      rescue Redis::CommandError => e
+        Rails.logger.error("DiscourseMediaBot metrics clearing failed: #{e.message}")
+        raise CacheError, "Failed to clear metrics: #{e.message}"
       end
     end
     
@@ -48,8 +75,13 @@ module MediaBot
     
     def self.track_metric(metric, service, value)
       key = "#{METRICS[metric]}:#{service}:#{Time.current.strftime('%Y%m%d%H')}"
-      Discourse.redis.zincrby(key, value, Time.current.to_i)
-      Discourse.redis.expire(key, 7.days.to_i)
+      begin
+        Discourse.redis.zincrby(key, value, Time.current.to_i)
+        Discourse.redis.expire(key, 7.days.to_i)
+      rescue Redis::CommandError => e
+        Rails.logger.error("DiscourseMediaBot metric tracking failed: #{e.message}")
+        raise CacheError, "Failed to track metric: #{e.message}"
+      end
     end
     
     def self.get_metric(key, service, start_time)
@@ -57,12 +89,17 @@ module MediaBot
         "#{key}:#{service}:#{Time.at(timestamp).strftime('%Y%m%d%H')}"
       end
       
-      values = hourly_keys.map do |hourly_key|
-        Discourse.redis.zrange(hourly_key, 0, -1, withscores: true)
-      end.flatten(1)
-      
-      values.group_by { |_, score| Time.at(score).strftime('%Y-%m-%d %H:00') }
-            .transform_values { |v| v.sum { |val, _| val.to_f } }
+      begin
+        values = hourly_keys.map do |hourly_key|
+          Discourse.redis.zrange(hourly_key, 0, -1, withscores: true)
+        end.flatten(1)
+        
+        values.group_by { |_, score| Time.at(score).strftime('%Y-%m-%d %H:00') }
+              .transform_values { |v| v.sum { |val, _| val.to_f } }
+      rescue Redis::CommandError => e
+        Rails.logger.error("DiscourseMediaBot metric retrieval failed: #{e.message}")
+        {}
+      end
     end
   end
 end 
