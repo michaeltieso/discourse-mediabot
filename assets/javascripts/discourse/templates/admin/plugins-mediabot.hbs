@@ -1,0 +1,150 @@
+<div class="mediabot-admin">
+  <div class="mediabot-settings">
+    <h2>{{i18n "mediabot.admin.settings.title"}}</h2>
+    
+    <div class="settings-section">
+      <div class="setting-item">
+        <label>{{i18n "mediabot.admin.settings.enabled"}}</label>
+        <Input @type="checkbox" @checked={{this.model.settings.enabled}} />
+      </div>
+      
+      <div class="setting-item">
+        <label>{{i18n "mediabot.admin.settings.enabled_tags"}}</label>
+        <Input @type="text" @value={{this.model.settings.enabled_tags}} />
+      </div>
+      
+      <div class="setting-item">
+        <label>{{i18n "mediabot.admin.settings.enabled_categories"}}</label>
+        <Input @type="text" @value={{this.model.settings.enabled_categories}} />
+      </div>
+    </div>
+    
+    <div class="display-options">
+      <h3>{{i18n "mediabot.admin.settings.display_options"}}</h3>
+      
+      <div class="setting-item">
+        <label>{{i18n "mediabot.admin.settings.show_title"}}</label>
+        <Input @type="checkbox" @checked={{this.model.settings.display_options.show_title}} />
+      </div>
+      
+      <div class="setting-item">
+        <label>{{i18n "mediabot.admin.settings.show_poster"}}</label>
+        <Input @type="checkbox" @checked={{this.model.settings.display_options.show_poster}} />
+      </div>
+      
+      <div class="setting-item">
+        <label>{{i18n "mediabot.admin.settings.show_overview"}}</label>
+        <Input @type="checkbox" @checked={{this.model.settings.display_options.show_overview}} />
+      </div>
+      
+      <div class="setting-item">
+        <label>{{i18n "mediabot.admin.settings.show_cast"}}</label>
+        <Input @type="checkbox" @checked={{this.model.settings.display_options.show_cast}} />
+      </div>
+      
+      <div class="setting-item">
+        <label>{{i18n "mediabot.admin.settings.show_rating"}}</label>
+        <Input @type="checkbox" @checked={{this.model.settings.display_options.show_rating}} />
+      </div>
+      
+      <div class="setting-item">
+        <label>{{i18n "mediabot.admin.settings.show_genres"}}</label>
+        <Input @type="checkbox" @checked={{this.model.settings.display_options.show_genres}} />
+      </div>
+      
+      <div class="setting-item">
+        <label>{{i18n "mediabot.admin.settings.show_runtime"}}</label>
+        <Input @type="checkbox" @checked={{this.model.settings.display_options.show_runtime}} />
+      </div>
+      
+      <div class="setting-item">
+        <label>{{i18n "mediabot.admin.settings.show_links"}}</label>
+        <Input @type="checkbox" @checked={{this.model.settings.display_options.show_links}} />
+      </div>
+    </div>
+    
+    <DButton
+      @action={{action "saveSettings"}}
+      @label="mediabot.admin.settings.save"
+      @icon="save"
+      class="btn-primary"
+    />
+  </div>
+  
+  <div class="mediabot-metrics">
+    <h2>{{i18n "mediabot.admin.metrics.title"}}</h2>
+    
+    <div class="metrics-section">
+      <h3>{{i18n "mediabot.admin.metrics.tmdb"}}</h3>
+      <div class="metric-item">
+        <span>{{i18n "mediabot.admin.metrics.api_response_time"}}:</span>
+        <span>{{this.model.metrics.tmdb.response_time}}ms</span>
+      </div>
+      <div class="metric-item">
+        <span>{{i18n "mediabot.admin.metrics.cache_hits"}}:</span>
+        <span>{{this.model.metrics.tmdb.cache_hits}}</span>
+      </div>
+      <div class="metric-item">
+        <span>{{i18n "mediabot.admin.metrics.cache_misses"}}:</span>
+        <span>{{this.model.metrics.tmdb.cache_misses}}</span>
+      </div>
+    </div>
+    
+    <div class="metrics-section">
+      <h3>{{i18n "mediabot.admin.metrics.tvdb"}}</h3>
+      <div class="metric-item">
+        <span>{{i18n "mediabot.admin.metrics.api_response_time"}}:</span>
+        <span>{{this.model.metrics.tvdb.response_time}}ms</span>
+      </div>
+      <div class="metric-item">
+        <span>{{i18n "mediabot.admin.metrics.cache_hits"}}:</span>
+        <span>{{this.model.metrics.tvdb.cache_hits}}</span>
+      </div>
+      <div class="metric-item">
+        <span>{{i18n "mediabot.admin.metrics.cache_misses"}}:</span>
+        <span>{{this.model.metrics.tvdb.cache_misses}}</span>
+      </div>
+    </div>
+    
+    <DButton
+      @action={{action "clearMetrics"}}
+      @label="mediabot.admin.metrics.clear"
+      @icon="trash"
+      class="btn-danger"
+    />
+  </div>
+  
+  <div class="mediabot-test">
+    <h2>{{i18n "mediabot.admin.test.title"}}</h2>
+    
+    <div class="test-section">
+      <div class="setting-item">
+        <label>{{i18n "mediabot.admin.test.service"}}</label>
+        <ComboBox
+          @value={{this.testService}}
+          @content={{this.availableServices}}
+          @onChange={{action (mut this.testService)}}
+        />
+      </div>
+      
+      <div class="setting-item">
+        <label>{{i18n "mediabot.admin.test.title_label"}}</label>
+        <Input @type="text" @value={{this.testTitle}} />
+      </div>
+      
+      <DButton
+        @action={{action "testApi"}}
+        @label="mediabot.admin.test.submit"
+        @icon="search"
+        @disabled={{this.testButtonDisabled}}
+        class="btn-primary"
+      />
+    </div>
+    
+    {{#if this.testResult}}
+      <div class="test-result">
+        <pre>{{this.testResult}}</pre>
+      </div>
+    {{/if}}
+  </div>
+</div> 

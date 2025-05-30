@@ -14,8 +14,9 @@ module ::DiscourseMediaBot
   end
 end
 
-# Register settings
+# Register assets
 register_asset "stylesheets/mediabot.scss"
+register_asset "javascripts/mediabot.js"
 
 # Load required files
 require_relative "lib/mediabot/fetcher"
@@ -29,7 +30,7 @@ DiscourseEvent.on(:topic_created) do |topic, opts, user|
   if SiteSetting.mediabot_enabled
     Jobs.enqueue_in(
       SiteSetting.mediabot_reply_delay.seconds,
-      :mediabot_reply,
+      :discourse_mediabot_reply,
       topic_id: topic.id
     )
   end
@@ -40,7 +41,7 @@ DiscourseEvent.on(:post_created) do |post, opts, user|
   if SiteSetting.mediabot_enabled && SiteSetting.mediabot_enable_inline_commands
     Jobs.enqueue_in(
       SiteSetting.mediabot_reply_delay.seconds,
-      :mediabot_inline_reply,
+      :discourse_mediabot_inline_reply,
       post_id: post.id
     )
   end
@@ -71,10 +72,10 @@ module ::Admin
           }
         },
         metrics: {
-          tmdb: MediaBot::PerformanceMonitor.get_metrics('tmdb'),
-          tvdb: MediaBot::PerformanceMonitor.get_metrics('tvdb')
+          tmdb: DiscourseMediaBot::PerformanceMonitor.get_metrics('tmdb'),
+          tvdb: DiscourseMediaBot::PerformanceMonitor.get_metrics('tvdb')
         },
-        errors: MediaBot::ErrorHandler.get_recent_errors(50)
+        errors: DiscourseMediaBot::ErrorHandler.get_recent_errors(50)
       )
     end
     
@@ -107,12 +108,12 @@ module ::Admin
     end
     
     def clear_metrics
-      MediaBot::PerformanceMonitor.clear_metrics
+      DiscourseMediaBot::PerformanceMonitor.clear_metrics
       render json: success_json
     end
     
     def clear_errors
-      MediaBot::ErrorHandler.clear_errors
+      DiscourseMediaBot::ErrorHandler.clear_errors
       render json: success_json
     end
     
@@ -121,7 +122,7 @@ module ::Admin
       title = params[:title]
       
       begin
-        fetcher = MediaBot::Fetcher.new(service)
+        fetcher = DiscourseMediaBot::Fetcher.new(service)
         result = fetcher.fetch(title)
         
         render json: {
@@ -131,7 +132,7 @@ module ::Admin
       rescue StandardError => e
         render json: {
           success: false,
-          error: MediaBot::ErrorHandler.handle_error(e, service: service, title: title)
+          error: DiscourseMediaBot::ErrorHandler.handle_error(e, service: service, title: title)
         }, status: 422
       end
     end

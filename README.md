@@ -13,6 +13,7 @@ A Discourse plugin that automatically replies to topics and posts with movie and
   - TVDb for TV shows
   - Rate limiting and caching
   - Error handling with retries
+  - Performance monitoring
 - **Configurable Display Options**:
   - Title with year
   - Poster image
@@ -32,6 +33,14 @@ A Discourse plugin that automatically replies to topics and posts with movie and
   - Emoji-enhanced display
   - Proper post threading
   - Locale-aware responses
+  - Loading states
+  - Error handling
+- **Admin Interface**:
+  - Settings management
+  - Performance metrics
+  - API testing
+  - Error monitoring
+  - Cache management
 - **Localization**:
   - Multi-language support
   - User locale preference
@@ -117,15 +126,17 @@ Configure which information to show in the bot's reply:
 - Set which tags trigger the bot (default: 'movie', 'tv')
 - Toggle inline commands
 - Configure reply delay
+- Set rate limits
+- Configure cache duration
 
-### Localization Settings
+### Performance Monitoring
 
-- Default locale (default: 'en-US')
-- Use user's preferred locale
-- Fallback locale for missing translations
-- Supported locales list
-- Custom emojis per locale
-- Error message translations
+The admin interface provides detailed metrics:
+- API response times
+- Cache hit/miss rates
+- Error counts
+- Request counts
+- Rate limit status
 
 ## Usage
 
@@ -240,12 +251,18 @@ bundle exec rspec
 - Rate limiting
 - Localization support
 - Comprehensive test suite
+- Performance monitoring
+- Error tracking
+- Admin interface
+- Cache management
 
 ### 🚧 In Progress
 
 - Enhanced error handling
 - Performance optimizations
 - Admin UI improvements
+- API key validation
+- Reply preview feature
 
 ### 📋 Planned Features
 
@@ -260,12 +277,14 @@ bundle exec rspec
    - Rich media previews
    - User watchlist integration
    - Similar media recommendations
+   - Batch processing for multiple requests
+   - Cache warming for popular media
 
 3. **Performance Improvements**
-   - Cache warming for popular media
-   - Batch processing for multiple requests
-   - Performance monitoring
    - Response time optimization
+   - Advanced caching strategies
+   - Request batching
+   - Background job optimization
 
 4. **User Experience**
    - Custom reply templates
@@ -273,6 +292,7 @@ bundle exec rspec
    - Media comparison tools
    - Watchlist management
    - Media recommendations
+   - Interactive media cards
 
 ## Contributing
 
@@ -295,11 +315,13 @@ bundle exec rspec
    - Check API response format
    - Verify title parsing
    - Ensure API keys are valid
+   - Check rate limits
 
 3. **Performance Issues**
    - Check cache configuration
    - Monitor API response times
    - Review rate limiting settings
+   - Check Redis connection
 
 ### Debugging
 
@@ -317,6 +339,10 @@ bundle exec rspec
    ```ruby
    DiscourseMediaBot::Fetcher.api_usage
    ```
+
+4. Check metrics in admin interface:
+   - Go to Admin → Settings → Plugins → Discourse MediaBot
+   - View Performance Metrics section
 
 ## License
 

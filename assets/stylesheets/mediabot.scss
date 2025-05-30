@@ -11,4 +11,148 @@
       margin: 0.5em 0;
     }
   }
+}
+
+.mediabot-topic-indicator {
+  margin-left: 5px;
+  color: var(--primary);
+  
+  .mediabot-icon {
+    font-size: 1.2em;
+    
+    &.loading {
+      color: var(--primary-medium);
+      animation: spin 1s linear infinite;
+    }
+    
+    &.error {
+      color: var(--danger);
+    }
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.mediabot-reply {
+  margin-top: 1em;
+  padding: 1em;
+  border: 1px solid var(--primary-low);
+  border-radius: 4px;
+  
+  .mediabot-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1em;
+    
+    .mediabot-poster {
+      width: 100px;
+      margin-right: 1em;
+      border-radius: 4px;
+    }
+    
+    .mediabot-title {
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+  }
+  
+  .mediabot-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1em;
+    
+    .mediabot-section {
+      h4 {
+        margin-bottom: 0.5em;
+        color: var(--primary);
+      }
+    }
+  }
+  
+  .mediabot-links {
+    margin-top: 1em;
+    padding-top: 1em;
+    border-top: 1px solid var(--primary-low);
+    
+    a {
+      margin-right: 1em;
+    }
+  }
+}
+
+// Admin Interface Styles
+.mediabot-admin {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+
+  h2 {
+    margin-bottom: 20px;
+    color: var(--primary);
+  }
+
+  h3 {
+    margin: 15px 0;
+    color: var(--primary);
+  }
+
+  .settings-section,
+  .metrics-section,
+  .test-section {
+    background: var(--secondary);
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+  }
+
+  .setting-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+
+    label {
+      flex: 1;
+      margin-right: 10px;
+    }
+
+    input[type="text"] {
+      width: 300px;
+    }
+  }
+
+  .metric-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--primary-low);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .test-result {
+    margin-top: 15px;
+    padding: 10px;
+    background: var(--secondary);
+    border-radius: 4px;
+
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+  }
+
+  .btn-primary,
+  .btn-danger {
+    margin-top: 10px;
+  }
+
+  .display-options {
+    margin-top: 20px;
+  }
 } 
