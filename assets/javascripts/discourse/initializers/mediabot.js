@@ -4,14 +4,42 @@ function initializeMediaBot(api) {
   // Admin interface modifications
   api.modifyClass("controller:admin-plugins", {
     actions: {
-      clearMediaBotMetrics() {
-        return this.send("clearMetrics");
+      clearMetrics() {
+        return this.ajax("/admin/plugins/mediabot/clear_metrics", {
+          type: "POST"
+        }).then(() => {
+          this.set("model.metrics", {});
+        });
       },
-      clearMediaBotErrors() {
-        return this.send("clearErrors");
+      clearErrors() {
+        return this.ajax("/admin/plugins/mediabot/clear_errors", {
+          type: "POST"
+        }).then(() => {
+          this.set("model.errors", []);
+        });
       },
-      testMediaBotApi() {
-        return this.send("testApi");
+      testApi() {
+        if (!this.testTitle) {
+          return;
+        }
+
+        this.set("testButtonDisabled", true);
+        return this.ajax("/admin/plugins/mediabot/test_api", {
+          type: "POST",
+          data: {
+            service: this.testService,
+            title: this.testTitle
+          }
+        })
+          .then(result => {
+            this.set("testResult", JSON.stringify(result, null, 2));
+          })
+          .catch(error => {
+            this.set("testResult", error.jqXHR.responseJSON.error);
+          })
+          .finally(() => {
+            this.set("testButtonDisabled", false);
+          });
       }
     }
   });

@@ -1,61 +1,42 @@
 # name: discourse-mediabot
-# about: Automatically replies to topics with movie and TV show information
+# about: Automatically replies to topics and posts with movie and TV show information
 # version: 0.1.0
-# authors: michaeltieso
+# authors: Michael Tieso
 # url: https://github.com/michaeltieso/discourse-mediabot
 # required_version: 2.8.0
 
+enabled_site_setting :mediabot_enabled
+
 module ::DiscourseMediaBot
   PLUGIN_NAME = "discourse-mediabot"
-  
-  class Engine < ::Rails::Engine
-    engine_name PLUGIN_NAME
-    isolate_namespace DiscourseMediaBot
-  end
 end
 
-# Register assets
-register_asset "stylesheets/mediabot.scss"
-register_asset "javascripts/mediabot.js"
+require_relative "lib/mediabot/engine"
 
-# Load required files
-require_relative "lib/mediabot/fetcher"
-require_relative "lib/mediabot/title_parser"
-require_relative "lib/mediabot/reply_formatter"
-require_relative "jobs/regular/mediabot_reply"
-require_relative "jobs/regular/mediabot_inline_reply"
-
-# Register event handlers
-DiscourseEvent.on(:topic_created) do |topic, opts, user|
-  if SiteSetting.mediabot_enabled
-    Jobs.enqueue_in(
-      SiteSetting.mediabot_reply_delay.seconds,
-      :discourse_mediabot_reply,
-      topic_id: topic.id
-    )
+after_initialize do
+  # Register event handlers
+  on(:topic_created) do |topic, opts|
+    if SiteSetting.mediabot_enabled
+      Jobs.enqueue(:discourse_mediabot_reply, topic_id: topic.id)
+    end
   end
-end
 
-# Handle inline commands in posts
-DiscourseEvent.on(:post_created) do |post, opts, user|
-  if SiteSetting.mediabot_enabled && SiteSetting.mediabot_enable_inline_commands
-    Jobs.enqueue_in(
-      SiteSetting.mediabot_reply_delay.seconds,
-      :discourse_mediabot_inline_reply,
-      post_id: post.id
-    )
+  on(:post_created) do |post, opts|
+    if SiteSetting.mediabot_enabled && SiteSetting.mediabot_enable_inline_commands
+      Jobs.enqueue(:discourse_mediabot_inline_reply, post_id: post.id)
+    end
   end
-end
 
-# Admin routes
-add_admin_route 'mediabot.title', 'mediabot'
+  # Register admin routes
+  add_admin_route 'mediabot.title', 'mediabot'
 
-module ::Admin
-  class MediaBotController < ::Admin::AdminController
-    requires_plugin 'discourse-mediabot'
-    
+  # Register stylesheets
+  register_asset "stylesheets/mediabot.scss"
+
+  # Register admin controller
+  class ::Admin::MediaBotController < ::Admin::AdminController
     def index
-      render_json_dump(
+      render json: {
         settings: {
           enabled: SiteSetting.mediabot_enabled,
           enabled_tags: SiteSetting.mediabot_enabled_tags,
@@ -71,69 +52,34 @@ module ::Admin
             show_links: SiteSetting.mediabot_show_external_links
           }
         },
-        metrics: {
-          tmdb: DiscourseMediaBot::PerformanceMonitor.get_metrics('tmdb'),
-          tvdb: DiscourseMediaBot::PerformanceMonitor.get_metrics('tvdb')
-        },
-        errors: DiscourseMediaBot::ErrorHandler.get_recent_errors(50)
-      )
+        metrics: DiscourseMediaBot::Fetcher.metrics,
+        errors: DiscourseMediaBot::ErrorHandler.recent_errors
+      }
     end
-    
-    def update_settings
-      params.require(:settings).permit(
-        :enabled,
-        :enabled_tags,
-        :enabled_categories,
-        display_options: [
-          :show_title,
-          :show_poster,
-          :show_overview,
-          :show_cast,
-          :show_rating,
-          :show_genres,
-          :show_runtime,
-          :show_links
-        ]
-      ).each do |key, value|
-        if key == 'display_options'
-          value.each do |option, enabled|
-            SiteSetting.send("mediabot_#{option}=", enabled)
-          end
-        else
-          SiteSetting.send("mediabot_#{key}=", value)
-        end
-      end
-      
-      render json: success_json
-    end
-    
+
     def clear_metrics
-      DiscourseMediaBot::PerformanceMonitor.clear_metrics
+      DiscourseMediaBot::Fetcher.clear_metrics
       render json: success_json
     end
-    
+
     def clear_errors
       DiscourseMediaBot::ErrorHandler.clear_errors
       render json: success_json
     end
-    
+
     def test_api
       service = params[:service]
       title = params[:title]
-      
+
+      if title.blank?
+        return render json: { error: I18n.t("mediabot.admin.test.title_required") }, status: 400
+      end
+
       begin
-        fetcher = DiscourseMediaBot::Fetcher.new(service)
-        result = fetcher.fetch(title)
-        
-        render json: {
-          success: true,
-          data: result
-        }
-      rescue StandardError => e
-        render json: {
-          success: false,
-          error: DiscourseMediaBot::ErrorHandler.handle_error(e, service: service, title: title)
-        }, status: 422
+        result = DiscourseMediaBot::Fetcher.fetch(service, title)
+        render json: { result: result }
+      rescue => e
+        render json: { error: e.message }, status: 500
       end
     end
   end
