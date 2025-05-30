@@ -1,64 +1,56 @@
-mediabot_enabled:
-  default: true
-  client: true
-
-# API Keys
-mediabot_tmdb_api_key:
-  default: ""
-  secret: true
-  client: true # Allow admins to set this in the UI
-mediabot_tvdb_api_key:
-  default: ""
-  secret: true
-  client: true # Allow admins to set this in the UI
+plugins:
+  mediabot_enabled:
+    default: false
+    client: true
+  mediabot_tmdb_api_key:
+    default: ""
+    secret: true
+  mediabot_tvdb_api_key:
+    default: ""
+    secret: true
+  mediabot_enabled_tags:
+    default: "movie,tv"
+    client: true
+  mediabot_enabled_categories:
+    default: ""
+    client: true
+  mediabot_enable_inline_commands:
+    default: true
+    client: true
+  mediabot_show_title:
+    default: true
+    client: true
+  mediabot_show_poster:
+    default: true
+    client: true
+  mediabot_show_overview:
+    default: true
+    client: true
+  mediabot_show_cast:
+    default: true
+    client: true
+  mediabot_show_rating:
+    default: true
+    client: true
+  mediabot_show_genres:
+    default: true
+    client: true
+  mediabot_show_runtime:
+    default: true
+    client: true
+  mediabot_show_external_links:
+    default: true
+    client: true
+  mediabot_reply_delay:
+    default: 0
+    client: true
 
 # Display Options
-mediabot_show_title:
-  default: true
-  client: true
-mediabot_show_poster:
-  default: true
-  client: true
-mediabot_show_overview:
-  default: true
-  client: true
 mediabot_show_release_date:
-  default: true
-  client: true
-mediabot_show_cast:
-  default: true
-  client: true
-mediabot_show_rating:
-  default: true
-  client: true
-mediabot_show_genres:
-  default: true
-  client: true
-mediabot_show_runtime:
-  default: true
-  client: true
-mediabot_show_external_links: # Note: Changed from mediabot_show_links
   default: true
   client: true
 
 # Behavior Settings
-mediabot_reply_delay:
-  default: 0
-  client: true
-mediabot_enabled_categories:
-  default: "" # Comma-separated list of category slugs or IDs
-  client: true
-mediabot_enabled_tags:
-  default: "movie,tv" # Comma-separated list of tags
-  client: true
-mediabot_enable_inline_commands:
-  default: true
-  client: true
-
-# Localization Settings
-mediabot_default_locale:
-  default: "en-US"
-  client: true
 mediabot_use_user_locale:
   default: true
   client: true
