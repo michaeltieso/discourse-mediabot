@@ -1,81 +1,64 @@
-module Jobs
-  class MediaBotInlineReply < ::Jobs::Base
-    def execute(args)
-      post = Post.find_by(id: args[:post_id])
-      return if post.nil?
+class DiscourseMediaBotInlineReply < ::Jobs::Base
+  def execute(args)
+    return unless args[:post_id]
+    
+    post = Post.find_by(id: args[:post_id])
+    return unless post
+    
+    # Parse the post content for media information
+    parser = DiscourseMediaBot::TitleParser.new(post)
+    media_info = parser.parse
+    
+    return unless media_info
+    
+    begin
+      # Fetch media information
+      fetcher = DiscourseMediaBot::Fetcher.new(media_info[:type])
+      media_data = fetcher.fetch(media_info[:title])
       
-      # Find or create bot user
-      bot_user = find_or_create_bot_user
-      return if bot_user.nil?
+    rescue DiscourseMediaBot::Fetcher::ApiError => e
+      Rails.logger.error("DiscourseMediaBot API error: #{e.message}")
+      return
       
-      # Parse the post content
-      parser = MediaBot::TitleParser.new(post)
-      return unless parser.should_process?
-      
-      media_info = parser.parse
-      return if media_info.nil?
-      
-      # Get user's locale
-      locale = post.user&.locale || 'en-US'
-      
-      # Fetch media data
-      begin
-        fetcher = MediaBot::Fetcher.new(media_info[:type])
-        media_data = fetcher.fetch(media_info[:title], locale: locale)
-      rescue MediaBot::Fetcher::ApiError => e
-        Rails.logger.error("MediaBot API error: #{e.message}")
-        return
-      rescue MediaBot::Fetcher::RateLimitError => e
-        Rails.logger.error("MediaBot rate limit exceeded: #{e.message}")
-        # Retry the job after a delay
-        Jobs.enqueue_in(5.minutes, :mediabot_inline_reply, post_id: post.id)
-        return
-      end
-      
-      # Format the reply
-      formatter = MediaBot::ReplyFormatter.new(media_data, media_info[:type])
-      reply_content = formatter.format
-      
-      # Create the reply post
-      PostCreator.create!(
-        bot_user,
-        topic_id: post.topic_id,
-        raw: reply_content,
-        reply_to_post_number: post.post_number,
-        skip_validations: true
-      )
+    rescue DiscourseMediaBot::Fetcher::RateLimitError => e
+      Rails.logger.error("DiscourseMediaBot rate limit exceeded: #{e.message}")
+      # Retry after rate limit window
+      Jobs.enqueue_in(5.minutes, :discourse_mediabot_inline_reply, post_id: post.id)
+      return
     end
     
-    private
+    # Format the reply
+    formatter = DiscourseMediaBot::ReplyFormatter.new(media_data, media_info[:type])
+    reply_content = formatter.format
     
-    def find_or_create_bot_user
-      # Try to find existing bot user
-      bot_user = User.find_by(username: 'MediaBot')
-      return bot_user if bot_user
-      
-      # Create new bot user if not found
+    # Create or find the bot user
+    bot_user = User.find_by(username: 'DiscourseMediaBot')
+    
+    unless bot_user
       begin
         bot_user = User.create!(
-          username: 'MediaBot',
+          username: 'DiscourseMediaBot',
           email: 'mediabot@example.com',
           password: SecureRandom.hex(20),
           active: true,
           trust_level: TrustLevel[1],
-          manual_locked_trust_level: TrustLevel[1],
           approved: true,
           approved_by_id: -1,
           approved_at: Time.current
         )
-        
-        # Add bot user to staff group
-        staff_group = Group.find_by(name: 'staff')
-        staff_group&.add(bot_user)
-        
-        bot_user
       rescue => e
-        Rails.logger.error("Failed to create MediaBot user: #{e.message}")
-        nil
+        Rails.logger.error("Failed to create DiscourseMediaBot user: #{e.message}")
+        return
       end
     end
+    
+    # Create the reply
+    PostCreator.create!(
+      bot_user,
+      topic_id: post.topic_id,
+      raw: reply_content,
+      reply_to_post_number: post.post_number,
+      skip_validations: true
+    )
   end
 end 

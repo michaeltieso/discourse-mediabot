@@ -1,16 +1,16 @@
-# name: MediaBot
+# name: discourse-mediabot
 # about: Automatically replies to topics with movie and TV show information
 # version: 0.1.0
 # authors: michaeltieso
 # url: https://github.com/michaeltieso/discourse-mediabot
 # required_version: 2.8.0
 
-module ::MediaBot
-  PLUGIN_NAME = "mediabot"
+module ::DiscourseMediaBot
+  PLUGIN_NAME = "discourse-mediabot"
   
   class Engine < ::Rails::Engine
     engine_name PLUGIN_NAME
-    isolate_namespace MediaBot
+    isolate_namespace DiscourseMediaBot
   end
 end
 
@@ -51,7 +51,7 @@ add_admin_route 'mediabot.title', 'mediabot'
 
 module ::Admin
   class MediaBotController < ::Admin::AdminController
-    requires_plugin 'mediabot'
+    requires_plugin 'discourse-mediabot'
     
     def index
       render_json_dump(
@@ -139,7 +139,7 @@ module ::Admin
 end
 
 Discourse::Application.routes.append do
-  mount ::MediaBot::Engine, at: "/mediabot"
+  mount ::DiscourseMediaBot::Engine, at: "/mediabot"
   
   namespace :admin, constraints: StaffConstraint.new do
     get 'plugins/mediabot' => 'mediabot#index'

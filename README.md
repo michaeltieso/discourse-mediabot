@@ -1,4 +1,4 @@
-# MediaBot - Discourse Plugin
+# Discourse MediaBot Plugin
 
 A Discourse plugin that automatically replies to topics and posts with movie and TV show information from TMDb and TVDb.
 
@@ -46,7 +46,7 @@ A Discourse plugin that automatically replies to topics and posts with movie and
    cd /var/discourse
    ./launcher enter app
    cd /var/www/discourse
-   git clone https://github.com/yourusername/discourse-mediabot plugins/mediabot
+   git clone https://github.com/michaeltieso/discourse-mediabot plugins/discourse-mediabot
    ```
 
 2. Rebuild your Discourse container:
@@ -55,7 +55,8 @@ A Discourse plugin that automatically replies to topics and posts with movie and
    ./launcher rebuild app
    ```
 
-3. Enable the plugin in your Discourse admin settings
+3. Enable the plugin in your Discourse admin settings:
+   - Go to Admin → Settings → Plugins → Discourse MediaBot
 
 ## Configuration
 
@@ -78,7 +79,7 @@ A Discourse plugin that automatically replies to topics and posts with movie and
 #### Setting Up API Keys
 
 1. **In Discourse Admin**:
-   - Go to Admin → Settings → Plugins → MediaBot
+   - Go to Admin → Settings → Plugins → Discourse MediaBot
    - Enter your API keys in the respective fields
    - Keys are stored securely and marked as secrets
    - Changes take effect immediately
@@ -97,24 +98,8 @@ A Discourse plugin that automatically replies to topics and posts with movie and
    - Monitor API usage
    - Set up rate limit alerts
 
-#### API Key Management
+### Display Options
 
-1. **Storage**:
-   - Keys are encrypted at rest
-   - Stored in Discourse's secure settings
-   - Accessible only to administrators
-   - Logged access for security
-
-2. **Usage Monitoring**:
-   - Track request counts
-   - Monitor rate limits
-   - Log API errors
-   - Alert on unusual activity
-
-3. **Key Rotation**:
-   - Regular key updates
-   - Zero-downtime rotation
-   - Backup keys
 Configure which information to show in the bot's reply:
 - Title
 - Poster
@@ -146,7 +131,7 @@ Configure which information to show in the bot's reply:
 
 ### Topic-Level Format
 
-MediaBot supports two ways to trigger a response in new topics:
+Discourse MediaBot supports two ways to trigger a response in new topics:
 
 1. Using tags:
    - Add the 'movie' or 'tv' tag to your topic
@@ -158,7 +143,7 @@ MediaBot supports two ways to trigger a response in new topics:
 
 ### Inline Commands
 
-Use MediaBot in any post with these commands:
+Use Discourse MediaBot in any post with these commands:
 - `!movie The Iron Claw (2023)`
 - `!tv Breaking Bad`
 
@@ -203,7 +188,7 @@ The bot will reply to your post with the media information, properly threaded in
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/discourse-mediabot
+   git clone https://github.com/michaeltieso/discourse-mediabot
    cd discourse-mediabot
    ```
 
@@ -297,22 +282,6 @@ bundle exec rspec
 4. Ensure all tests pass
 5. Submit a pull request
 
-## Development Setup
-
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   bundle install
-   ```
-3. Set up test environment:
-   ```bash
-   bundle exec rails db:create db:migrate RAILS_ENV=test
-   ```
-4. Run tests:
-   ```bash
-   bundle exec rspec
-   ```
-
 ## Troubleshooting
 
 ### Common Issues
@@ -346,7 +315,7 @@ bundle exec rspec
 
 3. Monitor API usage:
    ```ruby
-   MediaBot::Fetcher.api_usage
+   DiscourseMediaBot::Fetcher.api_usage
    ```
 
 ## License
