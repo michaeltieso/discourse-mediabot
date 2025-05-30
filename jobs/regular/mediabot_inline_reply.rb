@@ -1,5 +1,5 @@
 module Jobs
-  class DiscourseMediaBotInlineReply < ::Jobs::Base
+  class DiscourseMediabotInlineReply < ::Jobs::Base
     def execute(args)
       return unless args[:post_id]
       
@@ -54,13 +54,17 @@ module Jobs
       end
       
       # Create the reply
-      PostCreator.create!(
-        bot_user,
-        topic_id: post.topic_id,
-        raw: reply_content,
-        reply_to_post_number: post.post_number,
-        skip_validations: true
-      )
+      begin
+        PostCreator.create!(
+          bot_user,
+          topic_id: post.topic_id,
+          raw: reply_content,
+          reply_to_post_number: post.post_number,
+          skip_validations: true
+        )
+      rescue => e
+        Rails.logger.error("Failed to create MediaBot reply: #{e.message}")
+      end
     end
   end
 end 
