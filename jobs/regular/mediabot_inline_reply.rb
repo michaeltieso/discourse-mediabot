@@ -1,5 +1,5 @@
 module Jobs
-  class DiscourseMediabotInlineReply < ::Jobs::Base
+  class MediabotInlineReply < ::Jobs::Base
     def execute(args)
       return unless args[:post_id]
       
@@ -24,7 +24,7 @@ module Jobs
       rescue DiscourseMediaBot::Fetcher::RateLimitError => e
         Rails.logger.error("DiscourseMediaBot rate limit exceeded: #{e.message}")
         # Retry after rate limit window
-        Jobs.enqueue_in(5.minutes, :discourse_mediabot_inline_reply, post_id: post.id)
+        Jobs.enqueue_in(5.minutes, :mediabot_inline_reply, post_id: post.id)
         return
       end
       
