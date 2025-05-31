@@ -23,7 +23,7 @@ after_initialize do
 
   on(:post_created) do |post, opts|
     if SiteSetting.mediabot_enabled && SiteSetting.mediabot_enable_inline_commands
-      Jobs.enqueue(:mediabot_inline_reply, post_id: post.id)
+      Jobs.enqueue(:discourse_mediabot_inline_reply, post_id: post.id)
     end
   end
 
